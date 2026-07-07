@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<title>Compass — Finance</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Compass">
+<meta name="theme-color" content="#0E1217">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="splash">
+  <svg viewBox="0 0 100 100" fill="none">
+    <circle cx="50" cy="50" r="46" stroke="#2A323D" stroke-width="2"/>
+    <circle cx="50" cy="50" r="46" stroke="#E8A33D" stroke-width="3" stroke-linecap="round" stroke-dasharray="180 300"/>
+    <line x1="50" y1="50" x2="50" y2="18" stroke="#ECEFF3" stroke-width="3" stroke-linecap="round"/>
+    <line x1="50" y1="50" x2="70" y2="58" stroke="#45D0C4" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="50" cy="50" r="4" fill="#ECEFF3"/>
+  </svg>
+</div>
+
+<div id="app">
+
+  <div class="topbar">
+    <div>
+      <div class="eyebrow" id="topEyebrow">Compass</div>
+      <h1 id="topTitle">Dashboard</h1>
+    </div>
+    <button class="icon-btn" id="menuBtn" aria-label="Settings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 13a7.6 7.6 0 000-2l2-1.5-2-3.5-2.4.6a7.7 7.7 0 00-1.7-1L15 3h-6l-.3 2.6a7.7 7.7 0 00-1.7 1l-2.4-.6-2 3.5L4.6 11a7.6 7.6 0 000 2l-2 1.5 2 3.5 2.4-.6a7.7 7.7 0 001.7 1L9 21h6l.3-2.6a7.7 7.7 0 001.7-1l2.4.6 2-3.5-2-1.5z"/></svg>
+    </button>
+  </div>
+
+  <!-- ============ DASHBOARD ============ -->
+  <section class="screen active" id="screen-dashboard">
+    <div class="hero">
+      <div class="h-label">Net worth</div>
+      <div class="h-value num" id="dashNetWorth">€0</div>
+      <div class="h-sub" id="dashNetWorthSub">No entries yet</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Savings rate</div>
+      <div class="dial-wrap">
+        <svg id="savingsDial" viewBox="0 0 140 90" width="130" height="84"></svg>
+        <div class="dial-figures">
+          <div class="d-value num" id="dashSavingsRate">0%</div>
+          <div class="d-label">of net income invested</div>
+          <div class="d-detail" id="dashSavingsDetail">Set your target in Income</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-label">This month</div>
+    <div class="kpi-grid">
+      <div class="kpi"><div class="k-label">Net income</div><div class="k-value num" id="kpiIncome">€0</div></div>
+      <div class="kpi amber"><div class="k-label">To invest</div><div class="k-value num" id="kpiInvest">€0</div></div>
+      <div class="kpi"><div class="k-label">Expenses</div><div class="k-value num" id="kpiExpenses">€0</div></div>
+      <div class="kpi pos"><div class="k-label">Cash flow</div><div class="k-value num" id="kpiCashflow">€0</div></div>
+    </div>
+
+    <div class="section-label">Loans</div>
+    <div class="card" id="dashLoansCard">
+      <div class="row">
+        <div class="r-main">
+          <div class="r-title">Home loan</div>
+          <div class="r-sub" id="dashHomeLoanSub">—</div>
+        </div>
+        <div class="r-value num" id="dashHomeLoanBalance">€0</div>
+      </div>
+      <div class="row">
+        <div class="r-main">
+          <div class="r-title">Auto loan</div>
+          <div class="r-sub" id="dashAutoLoanSub">—</div>
+        </div>
+        <div class="r-value num" id="dashAutoLoanBalance">€0</div>
+      </div>
+    </div>
+
+    <div class="section-label">Net worth trend</div>
+    <div class="card">
+      <div class="chart-wrap"><svg id="dashTrendChart" viewBox="0 0 340 160"></svg></div>
+    </div>
+  </section>
+
+  <!-- ============ INCOME ============ -->
+  <section class="screen" id="screen-income">
+    <div class="card">
+      <div class="card-title">Investing target</div>
+      <div class="field" style="margin-bottom:6px;">
+        <input type="range" id="investSlider" min="0" max="100" step="1" value="20" style="width:100%;">
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;">
+        <div class="d-value num" id="investPctLabel">20%</div>
+        <div class="hint" style="margin:0;">of each month's net income</div>
+      </div>
+    </div>
+
+    <div class="section-label">Monthly entries</div>
+    <div class="card" id="incomeList"></div>
+  </section>
+
+  <!-- ============ EXPENSES ============ -->
+  <section class="screen" id="screen-expenses">
+    <div class="hero">
+      <div class="h-label">Total monthly expenses</div>
+      <div class="h-value num" id="expTotal">€0</div>
+      <div class="h-sub" id="expActiveCount">0 active items</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">By category</div>
+      <div class="chart-wrap"><svg id="expDonut" viewBox="0 0 200 200"></svg></div>
+      <div class="legend" id="expLegend"></div>
+    </div>
+
+    <div class="section-label">All items</div>
+    <div class="card" id="expList"></div>
+  </section>
+
+  <!-- ============ NET WORTH ============ -->
+  <section class="screen" id="screen-networth">
+    <div class="hero">
+      <div class="h-label">Latest net worth</div>
+      <div class="h-value num" id="nwLatest">€0</div>
+      <div class="h-sub" id="nwLatestSub">—</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Over time</div>
+      <div class="chart-wrap"><svg id="nwChart" viewBox="0 0 340 160"></svg></div>
+    </div>
+
+    <div class="section-label">Monthly snapshots</div>
+    <div class="card" id="nwList"></div>
+  </section>
+
+  <!-- ============ LOANS ============ -->
+  <section class="screen" id="screen-loans">
+    <div class="segmented" id="loanSegment">
+      <button class="active" data-loan="home">Home loan</button>
+      <button data-loan="auto">Auto loan</button>
+    </div>
+
+    <div id="loanHomeView">
+      <div class="hero">
+        <div class="h-label">Current balance</div>
+        <div class="h-value num" id="homeBalance">€0</div>
+        <div class="h-sub" id="homeBalanceSub">—</div>
+      </div>
+      <div class="kpi-grid">
+        <div class="kpi"><div class="k-label">Monthly payment</div><div class="k-value num" id="homePayment">€0</div></div>
+        <div class="kpi"><div class="k-label">Current rate</div><div class="k-value num" id="homeRate">0%</div></div>
+        <div class="kpi"><div class="k-label">Payoff date</div><div class="k-value num" id="homePayoff">—</div></div>
+        <div class="kpi"><div class="k-label">Total interest</div><div class="k-value num" id="homeInterest">€0</div></div>
+      </div>
+      <div class="card mt-8">
+        <div class="card-title">Rate structure <button class="btn btn-ghost btn-sm" id="editHomeLoanBtn">Edit</button></div>
+        <div class="row"><div class="r-main"><div class="r-title">Fixed period</div><div class="r-sub" id="homeFixedInfo">—</div></div></div>
+        <div class="row"><div class="r-main"><div class="r-title">Variable period</div><div class="r-sub" id="homeVarInfo">—</div></div></div>
+      </div>
+      <div class="section-label">Balance over time</div>
+      <div class="card"><div class="chart-wrap"><svg id="homeChart" viewBox="0 0 340 160"></svg></div></div>
+      <div class="section-label">Amortization schedule</div>
+      <div class="card" id="homeSchedule"></div>
+    </div>
+
+    <div id="loanAutoView" style="display:none;">
+      <div class="hero">
+        <div class="h-label">Current balance</div>
+        <div class="h-value num" id="autoBalance">€0</div>
+        <div class="h-sub" id="autoBalanceSub">—</div>
+      </div>
+      <div class="kpi-grid">
+        <div class="kpi"><div class="k-label">Monthly payment</div><div class="k-value num" id="autoPayment">€0</div></div>
+        <div class="kpi"><div class="k-label">Interest rate</div><div class="k-value num" id="autoRate">0%</div></div>
+        <div class="kpi"><div class="k-label">Payoff date</div><div class="k-value num" id="autoPayoff">—</div></div>
+        <div class="kpi"><div class="k-label">Total interest</div><div class="k-value num" id="autoInterest">€0</div></div>
+      </div>
+      <div class="card mt-8">
+        <div class="card-title">Loan details <button class="btn btn-ghost btn-sm" id="editAutoLoanBtn">Edit</button></div>
+      </div>
+      <div class="section-label">Balance over time</div>
+      <div class="card"><div class="chart-wrap"><svg id="autoChart" viewBox="0 0 340 160"></svg></div></div>
+      <div class="section-label">Amortization schedule</div>
+      <div class="card" id="autoSchedule"></div>
+    </div>
+  </section>
+
+  <button class="fab" id="fabAdd">+</button>
+
+  <div class="tabbar">
+    <button class="tab active" data-tab="dashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 12l4-4M12 3v2M12 19v2M3 12h2M19 12h2"/></svg>
+      Dashboard
+    </button>
+    <button class="tab" data-tab="income">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg>
+      Income
+    </button>
+    <button class="tab" data-tab="expenses">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9h18l-1.5 10a2 2 0 01-2 1.7H6.5a2 2 0 01-2-1.7L3 9z"/><path d="M8 9V6a4 4 0 118 0v3"/></svg>
+      Expenses
+    </button>
+    <button class="tab" data-tab="networth">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19h16M7 16V10M12 16V6M17 16v-4"/></svg>
+      Net Worth
+    </button>
+    <button class="tab" data-tab="loans">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 21h16M5 21V10l7-6 7 6v11M9 21v-6h6v6"/></svg>
+      Loans
+    </button>
+  </div>
+</div>
+
+<!-- ============ MODAL SHEETS ============ -->
+<div class="sheet-backdrop" id="sheetBackdrop"></div>
+
+<div class="sheet" id="sheetIncome">
+  <div class="sheet-handle"></div>
+  <h2>Monthly income</h2>
+  <div class="field"><label>Month</label><input type="month" id="incMonth" class="num"></div>
+  <div class="field"><label>Net income (€)</label><input type="number" inputmode="decimal" id="incAmount" class="num" placeholder="0.00"></div>
+  <input type="hidden" id="incId">
+  <div class="sheet-actions">
+    <button class="btn btn-ghost" id="incDeleteBtn" style="display:none;">Delete</button>
+    <button class="btn btn-primary btn-block" id="incSaveBtn">Save</button>
+  </div>
+</div>
+
+<div class="sheet" id="sheetExpense">
+  <div class="sheet-handle"></div>
+  <h2>Expense / subscription</h2>
+  <div class="field"><label>Category</label>
+    <select id="expCategory">
+      <option>Housing</option><option>Utilities</option><option>Subscriptions</option>
+      <option>Insurance</option><option>Transport</option><option>Food & Groceries</option>
+      <option>Health & Fitness</option><option>Other</option>
+    </select>
+  </div>
+  <div class="field"><label>Name</label><input type="text" id="expName" placeholder="e.g. Netflix"></div>
+  <div class="field-row">
+    <div class="field"><label>Amount (€)</label><input type="number" inputmode="decimal" id="expAmount" class="num" placeholder="0.00"></div>
+    <div class="field"><label>Frequency</label>
+      <select id="expFrequency"><option>Monthly</option><option>Yearly</option><option>Weekly</option></select>
+    </div>
+  </div>
+  <div class="row" style="padding:0 0 4px;">
+    <div class="r-title">Active</div>
+    <button class="toggle on" id="expActiveToggle"><span class="knob"></span></button>
+  </div>
+  <input type="hidden" id="expId">
+  <div class="sheet-actions">
+    <button class="btn btn-ghost" id="expDeleteBtn" style="display:none;">Delete</button>
+    <button class="btn btn-primary btn-block" id="expSaveBtn">Save</button>
+  </div>
+</div>
+
+<div class="sheet" id="sheetNetworth">
+  <div class="sheet-handle"></div>
+  <h2>Net worth snapshot</h2>
+  <div class="field"><label>Month</label><input type="month" id="nwMonth" class="num"></div>
+  <div class="field-row">
+    <div class="field"><label>Cash & savings (€)</label><input type="number" inputmode="decimal" id="nwCash" class="num" placeholder="0"></div>
+    <div class="field"><label>Investments (€)</label><input type="number" inputmode="decimal" id="nwInvestments" class="num" placeholder="0"></div>
+  </div>
+  <div class="field-row">
+    <div class="field"><label>Home value (€)</label><input type="number" inputmode="decimal" id="nwHome" class="num" placeholder="0"></div>
+    <div class="field"><label>Vehicle value (€)</label><input type="number" inputmode="decimal" id="nwVehicle" class="num" placeholder="0"></div>
+  </div>
+  <div class="field-row">
+    <div class="field"><label>Other assets (€)</label><input type="number" inputmode="decimal" id="nwOtherAssets" class="num" placeholder="0"></div>
+    <div class="field"><label>Other liabilities (€)</label><input type="number" inputmode="decimal" id="nwOtherLiab" class="num" placeholder="0"></div>
+  </div>
+  <div class="hint">Home &amp; auto loan balances are pulled in automatically from the Loans tab — no need to enter them here.</div>
+  <input type="hidden" id="nwId">
+  <div class="sheet-actions">
+    <button class="btn btn-ghost" id="nwDeleteBtn" style="display:none;">Delete</button>
+    <button class="btn btn-primary btn-block" id="nwSaveBtn">Save</button>
+  </div>
+</div>
+
+<div class="sheet" id="sheetHomeLoan">
+  <div class="sheet-handle"></div>
+  <h2>Home loan details</h2>
+  <div class="field"><label>Loan amount (€)</label><input type="number" inputmode="decimal" id="hlAmount" class="num"></div>
+  <div class="field-row">
+    <div class="field"><label>Term (years)</label><input type="number" inputmode="numeric" id="hlTerm" class="num"></div>
+    <div class="field"><label>Start date</label><input type="date" id="hlStart" class="num"></div>
+  </div>
+  <div class="divider"></div>
+  <div class="field-row">
+    <div class="field"><label>Fixed period (years)</label><input type="number" inputmode="numeric" id="hlFixedYears" class="num"></div>
+    <div class="field"><label>Fixed rate (%)</label><input type="number" inputmode="decimal" step="0.01" id="hlFixedRate" class="num"></div>
+  </div>
+  <div class="field-row">
+    <div class="field"><label>Euribor 6M (%)</label><input type="number" inputmode="decimal" step="0.01" id="hlEuribor" class="num"></div>
+    <div class="field"><label>Spread (%)</label><input type="number" inputmode="decimal" step="0.01" id="hlSpread" class="num"></div>
+  </div>
+  <div class="hint">After the fixed period, your rate becomes Euribor + Spread. Update the Euribor field whenever it changes — the schedule recalculates instantly.</div>
+  <div class="sheet-actions"><button class="btn btn-primary btn-block" id="hlSaveBtn">Save</button></div>
+</div>
+
+<div class="sheet" id="sheetAutoLoan">
+  <div class="sheet-handle"></div>
+  <h2>Auto loan details</h2>
+  <div class="field"><label>Loan amount (€)</label><input type="number" inputmode="decimal" id="alAmount" class="num"></div>
+  <div class="field-row">
+    <div class="field"><label>Interest rate (%)</label><input type="number" inputmode="decimal" step="0.01" id="alRate" class="num"></div>
+    <div class="field"><label>Term (years)</label><input type="number" inputmode="numeric" id="alTerm" class="num"></div>
+  </div>
+  <div class="field"><label>Start date</label><input type="date" id="alStart" class="num"></div>
+  <div class="sheet-actions"><button class="btn btn-primary btn-block" id="alSaveBtn">Save</button></div>
+</div>
+
+<div class="sheet" id="sheetSettings">
+  <div class="sheet-handle"></div>
+  <h2>Settings</h2>
+  <div class="row"><div class="r-main"><div class="r-title">Export data</div><div class="r-sub">Save a backup as a JSON file</div></div>
+    <button class="btn btn-ghost btn-sm" id="exportBtn">Export</button></div>
+  <div class="row"><div class="r-main"><div class="r-title">Import data</div><div class="r-sub">Restore from a backup file</div></div>
+    <button class="btn btn-ghost btn-sm" id="importBtn">Import</button></div>
+  <input type="file" id="importFile" accept="application/json" style="display:none;">
+  <div class="divider"></div>
+  <div class="row"><div class="r-main"><div class="r-title">Reset all data</div><div class="r-sub">This can't be undone</div></div>
+    <button class="btn btn-ghost btn-sm" id="resetBtn" style="color:var(--red);">Reset</button></div>
+  <div class="hint">All data is stored only on this device. Nothing is sent anywhere.</div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
