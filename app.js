@@ -40,8 +40,125 @@ function loadState() {
   }
 }
 
-function saveState() {
+function saveState(opts = {}) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  if (!opts.skipCloud) scheduleCloudSync();
+}
+
+// ---------- Cloud backup (GitHub Gist) ----------
+const CLOUD_KEY = 'compass_cloud_v1';
+const GIST_FILENAME = 'compass-finance-backup.json';
+let cloudSyncTimer = null;
+
+function loadCloudConfig() {
+  try { return JSON.parse(localStorage.getItem(CLOUD_KEY)) || {}; }
+  catch (e) { return {}; }
+}
+function saveCloudConfig(cfg) {
+  localStorage.setItem(CLOUD_KEY, JSON.stringify(cfg));
+}
+function updateCloudStatusUI() {
+  const cfg = loadCloudConfig();
+  const dot = document.getElementById('cloudStatusDot');
+  const text = document.getElementById('cloudStatusText');
+  if (!dot || !text) return;
+  if (cfg.gistId && cfg.lastSynced) {
+    dot.style.background = '#45D0C4';
+    text.textContent = 'Last synced ' + new Date(cfg.lastSynced).toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+  } else if (cfg.token) {
+    dot.style.background = '#E8A33D';
+    text.textContent = 'Token saved — tap "Back up now" to connect';
+  } else {
+    dot.style.background = '#5E6779';
+    text.textContent = 'Not connected';
+  }
+}
+function scheduleCloudSync() {
+  const cfg = loadCloudConfig();
+  if (!cfg.token) return;
+  clearTimeout(cloudSyncTimer);
+  cloudSyncTimer = setTimeout(cloudBackupSilent, 2500);
+}
+async function githubGistRequest(cfg, method) {
+  const body = { description: 'Compass Finance backup — do not rename the file inside', public: false,
+    files: { [GIST_FILENAME]: { content: JSON.stringify(state, null, 2) } } };
+  const url = cfg.gistId ? `https://api.github.com/gists/${cfg.gistId}` : 'https://api.github.com/gists';
+  const res = await fetch(url, {
+    method: cfg.gistId ? 'PATCH' : 'POST',
+    headers: { 'Authorization': `token ${cfg.token}`, 'Accept': 'application/vnd.github+json' },
+    body: JSON.stringify(body)
+  });
+  if (!res.ok) throw new Error('GitHub API error ' + res.status);
+  return res.json();
+}
+async function cloudBackupSilent() {
+  const cfg = loadCloudConfig();
+  if (!cfg.token) return;
+  try {
+    const json = await githubGistRequest(cfg, cfg.gistId ? 'PATCH' : 'POST');
+    cfg.gistId = json.id;
+    cfg.lastSynced = new Date().toISOString();
+    saveCloudConfig(cfg);
+    updateCloudStatusUI();
+  } catch (e) {
+    const dot = document.getElementById('cloudStatusDot');
+    const text = document.getElementById('cloudStatusText');
+    if (dot) dot.style.background = '#E1595A';
+    if (text) text.textContent = 'Auto-sync failed — tap "Back up now" to retry';
+  }
+}
+async function cloudBackupNow() {
+  const tokenInput = document.getElementById('cloudToken').value.trim();
+  const cfg = loadCloudConfig();
+  const token = tokenInput || cfg.token;
+  if (!token) { alert('Enter a GitHub personal access token first.'); return; }
+  cfg.token = token;
+  const btn = document.getElementById('cloudBackupBtn');
+  const prevLabel = btn.textContent;
+  btn.textContent = 'Backing up…'; btn.disabled = true;
+  try {
+    const json = await githubGistRequest(cfg);
+    cfg.gistId = json.id;
+    cfg.lastSynced = new Date().toISOString();
+    saveCloudConfig(cfg);
+    updateCloudStatusUI();
+  } catch (err) {
+    alert('Backup failed: ' + err.message + '\n\nCheck your token has gist access and you have an internet connection.');
+  } finally {
+    btn.textContent = prevLabel; btn.disabled = false;
+  }
+}
+async function cloudRestore() {
+  const tokenInput = document.getElementById('cloudToken').value.trim();
+  const cfg = loadCloudConfig();
+  const token = tokenInput || cfg.token;
+  if (!token) { alert('Enter your GitHub personal access token first.'); return; }
+  if (!cfg.gistId) { alert('No cloud backup connected on this device yet. Tap "Back up now" first on the device that has your data.'); return; }
+  cfg.token = token;
+  const btn = document.getElementById('cloudRestoreBtn');
+  const prevLabel = btn.textContent;
+  btn.textContent = 'Restoring…'; btn.disabled = true;
+  try {
+    const res = await fetch(`https://api.github.com/gists/${cfg.gistId}`, {
+      headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github+json' }
+    });
+    if (!res.ok) throw new Error('GitHub API error ' + res.status);
+    const json = await res.json();
+    const file = json.files[GIST_FILENAME];
+    if (!file) throw new Error('Backup file not found in that gist');
+    const parsed = JSON.parse(file.content);
+    state = Object.assign(defaultState(), parsed);
+    saveState({ skipCloud: true });
+    cfg.lastSynced = new Date().toISOString();
+    saveCloudConfig(cfg);
+    updateCloudStatusUI();
+    closeSheets();
+    renderAll();
+  } catch (err) {
+    alert('Restore failed: ' + err.message);
+  } finally {
+    btn.textContent = prevLabel; btn.disabled = false;
+  }
 }
 
 function uid() {
@@ -753,7 +870,14 @@ document.addEventListener('DOMContentLoaded', () => {
     saveState(); closeSheets(); renderAll();
   });
 
-  document.getElementById('menuBtn').addEventListener('click', () => openSheet('sheetSettings'));
+  document.getElementById('menuBtn').addEventListener('click', () => {
+    const cfg = loadCloudConfig();
+    document.getElementById('cloudToken').value = cfg.token || '';
+    updateCloudStatusUI();
+    openSheet('sheetSettings');
+  });
+  document.getElementById('cloudBackupBtn').addEventListener('click', cloudBackupNow);
+  document.getElementById('cloudRestoreBtn').addEventListener('click', cloudRestore);
   document.getElementById('exportBtn').addEventListener('click', () => {
     const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);

@@ -192,7 +192,9 @@
     </div>
   </section>
 
-  <button class="fab" id="fabAdd">+</button>
+  <button class="fab" id="fabAdd" aria-label="Add">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+  </button>
 
   <div class="tabbar">
     <button class="tab active" data-tab="dashboard">
@@ -321,6 +323,29 @@
 <div class="sheet" id="sheetSettings">
   <div class="sheet-handle"></div>
   <h2>Settings</h2>
+
+  <div class="card-title" style="margin-top:0;">Cloud backup <span id="cloudStatusDot" class="dot" style="background:#5E6779;"></span></div>
+  <div class="hint" style="margin-top:-8px;">
+    Backs up your data to a private GitHub Gist, so it survives a lost or replaced phone. Free, and only visible to you.
+  </div>
+  <div class="field" style="margin-top:12px;">
+    <label>GitHub personal access token</label>
+    <input type="password" id="cloudToken" placeholder="ghp_...">
+  </div>
+  <div class="hint">
+    Create one at <b>github.com/settings/tokens</b> → Generate new token (classic) → check only the <b>gist</b> scope.
+    Treat it like a password; it's stored only on this device.
+  </div>
+  <div class="row" style="padding-top:12px;">
+    <div class="r-main"><div class="r-sub" id="cloudStatusText">Not connected</div></div>
+  </div>
+  <div class="sheet-actions">
+    <button class="btn btn-ghost" id="cloudRestoreBtn">Restore from cloud</button>
+    <button class="btn btn-primary" id="cloudBackupBtn">Back up now</button>
+  </div>
+
+  <div class="divider"></div>
+
   <div class="row"><div class="r-main"><div class="r-title">Export data</div><div class="r-sub">Save a backup as a JSON file</div></div>
     <button class="btn btn-ghost btn-sm" id="exportBtn">Export</button></div>
   <div class="row"><div class="r-main"><div class="r-title">Import data</div><div class="r-sub">Restore from a backup file</div></div>
@@ -329,7 +354,7 @@
   <div class="divider"></div>
   <div class="row"><div class="r-main"><div class="r-title">Reset all data</div><div class="r-sub">This can't be undone</div></div>
     <button class="btn btn-ghost btn-sm" id="resetBtn" style="color:var(--red);">Reset</button></div>
-  <div class="hint">All data is stored only on this device. Nothing is sent anywhere.</div>
+  <div class="hint">Financial data is stored only on this device unless you connect cloud backup above. Nothing is sent anywhere else.</div>
 </div>
 
 <script src="app.js"></script>

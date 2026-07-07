@@ -1,7 +1,7 @@
 // Compass — offline cache
 // Bump this version whenever any cached file changes, so iOS Safari
 // picks up the new files instead of serving stale cached ones.
-const CACHE_VERSION = 'compass-v1';
+const CACHE_VERSION = 'compass-v2';
 const ASSETS = [
   './',
   './index.html',
